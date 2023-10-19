@@ -2,40 +2,37 @@
 {
     internal class Program
     {
+        public static Semaphore sema = new Semaphore(2, 2);
         static void Main(string[] args)
         {
+
             for(var i = 0; i < 5; i++)
             {
-                //var tmp = new MyClass().ReadFile();
-                MyClass.ReadFile();
+                var thread = new Thread(async () => await ReadFile(i));
+                thread.Start();              
             }
-
 
             Console.ReadLine();
+
         }
 
-
-    }
-
-    public class MyClass
-    {
-        public static void ReadFile()
+        public static async Task ReadFile(int i)
         {
-            for(var i = 0; i < 5; i++)
+            sema.WaitOne();
+            
+            using (var sr = new StreamReader("TestFile.txt"))
             {
-                Task.Run(async () =>
-                {
-                    using (var sr = new StreamReader("TestFile.txt"))
-                    {
-                        var timeStart = DateTime.Now;
-                        var data = sr.ReadToEnd();
-                        var timeEnd = DateTime.Now;
-                        Console.WriteLine($"Stream: {i} | Start: {timeStart} | End: {timeEnd}");
-                    }
-                });
+                var timeStart = DateTime.Now;
+                var data = sr.ReadToEnd();
+                var timeEnd = DateTime.Now;
+                Console.WriteLine($"Stream: {i} | Start: {timeStart} | End: {timeEnd}");
             }
 
+            sema.Release();
         }
+
+
     }
+
 
 }
